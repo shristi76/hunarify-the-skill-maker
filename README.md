@@ -44,11 +44,9 @@ Hunarify is a personalized web platform that empowers individuals to **monetize 
 
 ---
 
-## 🌐 Live Demo (optional)
 
-*If deployed, add your link here.*
 
----
+
 
 ## 📁 Folder Structure
 
@@ -101,18 +99,12 @@ Please:
 
 ## ✍️ Author
 
-**Your Name**
-Hunarify Hackathon Submission – 2025
+**shristi**
 
 Feel free to ⭐ the repo if you like this project!
 
 ---
 
-## ☕ Contributions
-
-Want to contribute? Pull requests are welcome! Suggestions, bugs, and improvements are encouraged.
-
----
 
 ## 🌟 Acknowledgements
 
@@ -123,4 +115,4 @@ Want to contribute? Pull requests are welcome! Suggestions, bugs, and improvemen
 
 ---
 
-> "Turn your hunar (skill) into your hustle — with Hunarify."
+
