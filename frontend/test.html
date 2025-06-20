@@ -97,7 +97,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   });
   document.getElementById('results').textContent = `🎉 Your Score: ${score}/10`;
 
-  const saveResponse = await fetch('/submit-test', {
+  const saveResponse = await fetch('/saveResult', {
     method: 'POST',
     headers: {
       'Authorization': 'Bearer ' + token,
