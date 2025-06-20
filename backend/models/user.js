@@ -7,7 +7,8 @@ const UserSchema = new mongoose.Schema({
   selectedCategory: String,
   selectedSubField: String,
   testResult: Number,
-  testTime: Number // <--- Add this line
+  testTime: Number ,
+  avatar: { type: String, default: null } 
 });
 
 module.exports = mongoose.model('User', UserSchema);

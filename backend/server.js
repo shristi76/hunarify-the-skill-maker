@@ -8,12 +8,36 @@ const jwt = require('jsonwebtoken');
 const path = require('path');
 const User = require('./models/user');
 const questions = require('./questions');
+const multer = require('multer');
 
 dotenv.config();
+
+// Set storage destination and filename
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, 'uploads');
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = Date.now() + '-' + file.originalname;
+    cb(null, uniqueName);
+  },
+});
+
+const fs = require('fs');
+
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const upload = multer({ storage: storage });
+
 // Middleware
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
@@ -32,7 +56,6 @@ function authMiddleware(req, res, next) {
   if (!authHeader) {
     return res.status(401).json({ error: 'Access denied. No token.' });
   }
-
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
@@ -43,8 +66,8 @@ function authMiddleware(req, res, next) {
   }
 }
 
-// Routes
-// Home Route
+// ROUTES START -----------------------------------------------------
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'frontend', 'auth.html'));
 });
@@ -147,7 +170,8 @@ app.get('/profile', authMiddleware, async (req, res) => {
     selectedCategory: user.selectedCategory,
     selectedSubField: user.selectedSubField,
     testResult: user.testResult,
-    testTime: user.testTime
+    testTime: user.testTime,
+    avatar: user.avatar
   });
 });
 
@@ -175,12 +199,45 @@ app.post('/tips', authMiddleware, async (req, res) => {
   }
 });
 
-// Catch-All Route (fixes unexpected JSON error)
+// Update Profile Route
+app.post('/update-profile', authMiddleware, upload.single('avatar'), async (req, res) => {
+  const { name, email } = req.body;
+
+  if (!name || !email) {
+    return res.status(400).json({ error: 'Name and email are required' });
+  }
+
+  try {
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.name = name;
+    user.email = email;
+
+    if (req.file) {
+      user.avatar = `/uploads/${req.file.filename}`;
+    }
+
+    await user.save();
+    res.json({ message: 'Profile updated successfully', avatar: user.avatar });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error updating profile.' });
+  }
+});
+
+// ===========================================================
+// 👇 Catch-All Route Must Be LAST 👇
+// ===========================================================
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' }); 
 });
 
+// ===========================================================
 // Start Server
+// ===========================================================
 app.listen(PORT, () => {
   console.log(`✅ Server is running at http://localhost:${PORT}`);
 });

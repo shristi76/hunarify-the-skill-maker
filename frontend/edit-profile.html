@@ -11,22 +11,31 @@
       <div class="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden">
         <img id="profileImage" src="https://via.placeholder.com/100" alt="Profile Photo" class="w-full h-full object-cover rounded-full">
       </div>
-      <input id="uploadInput" type="file" accept="image/*" class="text-sm text-gray-600" />
     </div>
-    <div class="space-y-3">
+
+    <!-- 👇 START FORM 👇 -->
+    <form id="profileForm" enctype="multipart/form-data" class="space-y-3">
       <div>
         <label class="font-semibold">Name:</label>
-        <input id="nameInput" type="text" class="mt-1 p-2 rounded-lg border border-gray-300 w-full" />
+        <input id="nameInput" name="name" type="text" class="mt-1 p-2 rounded-lg border border-gray-300 w-full" />
       </div>
       <div>
         <label class="font-semibold">Email:</label>
-        <input id="emailInput" type="email" class="mt-1 p-2 rounded-lg border border-gray-300 w-full" />
+        <input id="emailInput" name="email" type="email" class="mt-1 p-2 rounded-lg border border-gray-300 w-full" />
       </div>
-    </div>
-    <div class="flex space-x-3">
-      <button id="saveBtn" class="flex-1 p-3 rounded-lg bg-green-600 text-white font-bold hover:bg-green-700 transition">Save Changes</button>
-      <a href="./dashboard.html" class="flex-1 p-3 rounded-lg bg-gray-600 text-white font-bold text-center hover:bg-gray-700 transition">Cancel</a>
-    </div>
+      <div>
+        <label class="font-semibold">Profile Photo:</label>
+        <input id="uploadInput" name="avatar" type="file" accept="image/*" class="text-sm text-gray-600" />
+      </div>
+
+      <div class="flex space-x-3 mt-4">
+        <button id="saveBtn" type="submit" class="flex-1 p-3 rounded-lg bg-green-600 text-white font-bold hover:bg-green-700 transition">
+          Save Changes
+        </button>
+        <a href="./dashboard.html" class="flex-1 p-3 rounded-lg bg-gray-600 text-white font-bold text-center hover:bg-gray-700 transition">Cancel</a>
+      </div>
+    </form>
+    <!-- 👆 END FORM 👆 -->
   </div>
 
   <script>
@@ -44,6 +53,10 @@
       if (response.ok) {
         document.getElementById('nameInput').value = user.name;
         document.getElementById('emailInput').value = user.email;
+
+        if (user.avatar) {
+          document.getElementById('profileImage').src = user.avatar;
+        }
       } else {
         alert(user.error || 'Error loading user data');
       }
@@ -61,22 +74,19 @@
       }
     });
 
-    document.getElementById('saveBtn').addEventListener('click', async () => {
-      const name = document.getElementById('nameInput').value.trim();
-      const email = document.getElementById('emailInput').value.trim();
+    // ✅ Save Changes
+    const form = document.getElementById('profileForm');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-      if (!name || !email) {
-        alert('Name and Email are required!');
-        return;
-      }
+      const formData = new FormData(form);
 
       const response = await fetch('/update-profile', {
         method: 'POST',
         headers: {
-          'Authorization': 'Bearer ' + token,
-          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
         },
-        body: JSON.stringify({ name, email }),
+        body: formData,
       });
       const result = await response.json();
 
