@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hunarify Tips</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px) }
+  to { opacity: 1; transform: translateY(0) }
+}
+.animate-fade-in { animation: fadeIn 0.5s ease-in-out both; }
+</style>
+</head>
+<body class="bg-gradient-to-r from-pink-500 to-yellow-600 min-h-screen flex flex-col items-center justify-center p-5 relative">
+
+<!-- Overlay -->
+<div class="absolute inset-0 bg-black bg-opacity-40"></div>
+
+<!-- Main Box -->
+<div class="relative z-10 rounded-2xl shadow-2xl p-8 w-full max-w-2xl text-gray-800 bg-white bg-opacity-90 backdrop-blur-lg space-y-5 animate-fade-in">
+  <h1 class="text-3xl font-bold text-gray-800 text-center">🌟 Hunarify Tips</h1>
+  <div id="tipsSection" class="text-gray-700 space-y-3">Loading tips...</div>
+
+  <div class="mt-5">
+    <h2 class="text-xl font-bold text-gray-800">💻 Freelancing Opportunities</h2>
+    <div id="freelanceOptions" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3"></div>
+  </div>
+  <a href="./agent.html" class="mt-5 block text-center p-3 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 hover:scale-105 transition">Enable AI Agent</a>
+  <a href="./dashboard.html" class="mt-5 block text-center p-3 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 hover:scale-105 transition">← Back to Dashboard</a>
+</div>
+
+<script>
+const token = localStorage.getItem('token');
+if (!token) {
+  alert('Please login first!');
+  window.location.href = './auth.html';
+}
+
+// Dummy Freelance Options based on category
+const freelanceOptionsData = {
+  art: [
+    { name: 'Fiverr', link: 'https://www.fiverr.com/' },
+    { name: 'Upwork', link: 'https://www.upwork.com/' },
+    { name: 'Behance', link: 'https://www.behance.net/' },
+    { name: '99designs', link: 'https://99designs.com/' }
+  ],
+  tech: [
+    { name: 'Upwork', link: 'https://www.upwork.com/' },
+    { name: 'Topcoder', link: 'https://www.topcoder.com/' },
+    { name: 'Toptal', link: 'https://www.toptal.com/' },
+    { name: 'Fiverr', link: 'https://www.fiverr.com/' }
+  ],
+  gaming: [
+    { name: 'ArtStation', link: 'https://www.artstation.com/' },
+    { name: 'PeoplePerHour', link: 'https://www.peopleperhour.com/' },
+    { name: 'Fiverr', link: 'https://www.fiverr.com/' },
+    { name: 'Upwork', link: 'https://www.upwork.com/' }
+  ]
+};
+
+async function loadTips() {
+  const response = await fetch('/profile', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  const user = await response.json();
+  if (!response.ok) {
+    alert(user.error || 'Error loading user data');
+    return;
+  }
+
+  const category = user.selectedCategory;
+  const subField = user.selectedSubField;
+  const testResult = user.testResult;
+
+  const tipsResponse = await fetch('/tips', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ category, subField, testResult })
+  });
+  const tipsData = await tipsResponse.json();
+
+  const tipsSection = document.getElementById('tipsSection');
+  if (tipsResponse.ok) {
+    tipsSection.innerHTML = tipsData.tips.map(t =>
+      `<div class="bg-gray-100 rounded-lg p-3 hover:bg-gray-200 hover:scale-105 transition">
+        <span class="font-bold">👉 ${t}</span>
+      </div>`).join('');
+
+    // Populate Freelance Options
+    const freelanceOptions = freelanceOptionsData[category];
+    const freelanceContainer = document.getElementById('freelanceOptions');
+    freelanceContainer.innerHTML = freelanceOptions.map(f =>
+      `<a href="${f.link}" target="_blank" class="bg-white rounded-lg p-3 text-center font-bold hover:bg-gray-100 hover:scale-105 transition">${f.name}</a>`
+    ).join('');
+
+  } else {
+    alert(tipsData.error || 'Error loading tips');
+  }
+}
+
+// Load tips and recommendations
+loadTips();
+</script>
+</body>
+</html>

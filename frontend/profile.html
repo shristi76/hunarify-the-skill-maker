@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hunarify Profile</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="relative flex flex-col items-center justify-center min-h-screen p-5">
+  <!-- Background Image + Overlay -->
+  <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1573496358349-d97974b2339b?w=500&auto=format&fit=crop&q=60')] bg-cover bg-center"></div>
+  <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+
+  <!-- Main Profile Card -->
+  <div class="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl shadow-2xl p-6 w-96 text-center relative z-10">
+    <h1 class="text-2xl font-bold text-white">Your Profile</h1>
+    <div id="profileInfo" class="mt-3 text-gray-200"></div>
+    <a href="./dashboard.html" class="mt-5 inline-block p-3 rounded-lg bg-green-600 text-white font-bold hover:bg-green-700 transition">Back to Dashboard</a>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please login first!');
+      window.location.href = './auth.html';
+    }
+
+    async function loadProfile() {
+      const response = await fetch('/profile', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const user = await response.json();
+
+      if (response.ok) {
+        document.getElementById('profileInfo').innerHTML = `
+            <p><b>Name:</b> ${user.name}</p>
+            <p><b>Email:</b> ${user.email}</p>
+            <p><b>Category:</b> ${user.selectedCategory || 'N/A'}</p>
+            <p><b>Sub Field:</b> ${user.selectedSubField || 'N/A'}</p>
+            <p><b>Last Score:</b> ${user.testResult || 'N/A'}/10</p>
+        `;
+      } else {
+        alert(user.error || 'Error loading profile!');
+      }
+    }
+
+    loadProfile();
+  </script>
+</body>
+</html>

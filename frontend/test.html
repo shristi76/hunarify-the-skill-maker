@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Hunarify Test</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap"
+    rel="stylesheet"
+  />
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="relative min-h-screen flex items-center justify-center bg-cover bg-center p-5"
+      style="background-image: url('https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=500&auto=format&fit=crop&q=60');">
+
+<!-- Overlay -->
+<div class="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-sm"></div>
+
+<!-- Test Card -->
+<div class="relative z-10 bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-10 max-w-2xl w-full space-y-6 animate-fade-in">
+  <h1 class="text-4xl font-extrabold text-center text-gray-800">🎯 Hunarify Test</h1>
+  <div id="timer" class="text-center text-gray-800 font-bold text-lg">Time: 0m 0s</div>
+
+  <div id="questions-container" class="space-y-6 text-gray-800"></div>
+
+  <button id="submitBtn"
+          class="w-full py-3 bg-blue-600 text-white font-semibold text-lg rounded-xl hover:bg-blue-700 hover:scale-[1.02] transition-all duration-200 shadow-md">
+    ✅ Submit Answers
+  </button>
+
+  <div id="results" class="text-center text-xl font-bold text-gray-800 mt-4"></div>
+</div>
+
+<script>
+const token = localStorage.getItem('token');
+const category = localStorage.getItem('selectedCategory');
+const subField = localStorage.getItem('selectedSubField');
+
+if (!token || !category) {
+  alert("Missing category or not logged in.");
+  window.location.href = './auth.html';
+}
+
+let startTime = Date.now();
+let intervalId;
+
+function startTimer() {
+  const timerEl = document.getElementById('timer');
+  intervalId = setInterval(() => {
+    const seconds = Math.floor((Date.now() - startTime) / 1000);
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    timerEl.textContent = `Time: ${mins}m ${secs}s`;
+  }, 1000);
+}
+
+async function loadQuestions() {
+  const response = await fetch(`/questions/${category}`, {
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  const result = await response.json();
+
+  const container = document.getElementById('questions-container');
+  result.questions.forEach((q, index) => {
+    const options = q.options.map(opt =>
+      `<label class="flex items-center space-x-2 mt-2 text-base">
+        <input type="radio" name="q${index}" value="${opt}" class="accent-blue-600 w-5 h-5">
+        <span>${opt}</span>
+      </label>`).join('');
+    container.innerHTML += `
+      <div class="bg-white/70 border border-gray-300 rounded-xl p-4 shadow-sm">
+        <p class="font-semibold text-lg">${index + 1}. ${q.question}</p>
+        ${options}
+      </div>`;
+  });
+  startTimer();
+}
+loadQuestions();
+
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  clearInterval(intervalId);
+  const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+
+  const questionsResponse = await fetch(`/questions/${category}`, {
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  const result = await questionsResponse.json();
+  const questions = result.questions;
+
+  let score = 0;
+  questions.forEach((q, index) => {
+    const selected = document.querySelector(`input[name="q${index}"]:checked`);
+    if (selected && selected.value === q.answer) {
+      score++;
+    }
+  });
+  document.getElementById('results').textContent = `🎉 Your Score: ${score}/10`;
+
+  const saveResponse = await fetch('/submit-test', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ category, subField, score, timeTaken })
+  });
+  const saveResult = await saveResponse.json();
+
+  if (saveResponse.ok) {
+    alert(`🎉 Your Score: ${score}/10 in ${timeTaken}s. Redirecting...`);
+    window.location.href = './results.html';
+  } else {
+    alert(saveResult.error);
+  }
+});
+</script>
+</body>
+</html>

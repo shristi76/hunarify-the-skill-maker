@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hunarify Results</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body 
+  class="min-h-screen flex flex-col items-center justify-center p-5 bg-no-repeat bg-center bg-cover"
+  style="background-image: url('https://images.unsplash.com/photo-1575108943474-f85f12c13b52?w=500&auto=format&fit=crop&q=60');">
+
+  <!-- Dark Overlay -->
+  <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+
+  <div class="relative bg-white bg-opacity-90 rounded-2xl shadow-2xl p-8 w-96 text-center backdrop-blur-lg z-10">
+    <h1 class="text-3xl font-bold text-gray-800">Your Results</h1>
+    <div id="resultsInfo" class="mt-5 text-gray-700 text-left space-y-2"></div>
+
+    <a href="./profile.html" 
+       class="mt-6 inline-block w-full text-center p-3 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 transition">
+      Go to Profile
+    </a>
+    <a href="./tips.html" 
+       class="mt-3 inline-block w-full text-center p-3 rounded-lg bg-green-600 text-white font-bold hover:bg-green-700 transition">
+      💡 View Tips
+    </a>
+    <a href="./dashboard.html" 
+       class="mt-3 inline-block w-full text-center p-3 rounded-lg bg-pink-500 text-white font-bold hover:bg-pink-700 transition">
+      💡 Dashboard
+    </a>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please login first!');
+      window.location.href = './auth.html';
+    }
+
+    async function loadResults() {
+      const response = await fetch('/profile', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const user = await response.json();
+
+      if (response.ok) {
+        const mins = Math.floor(user.testTime / 60);
+        const secs = user.testTime % 60;
+
+        document.getElementById('resultsInfo').innerHTML = `
+            <p class="font-semibold"><span class="text-gray-500">Name:</span> ${user.name}</p>
+            <p class="font-semibold"><span class="text-gray-500">Email:</span> ${user.email}</p>
+            <p class="font-semibold"><span class="text-gray-500">Category:</span> ${user.selectedCategory || 'N/A'}</p>
+            <p class="font-semibold"><span class="text-gray-500">Sub Field:</span> ${user.selectedSubField || 'N/A'}</p>
+            <p class="font-semibold"><span class="text-gray-500">Last Score:</span> ${user.testResult || 'N/A'}/10</p>
+            <p class="font-semibold"><span class="text-gray-500">Time Taken:</span> ${user.testTime ? `${mins}m ${secs}s` : 'N/A'}</p>
+        `;
+      } else {
+        alert(user.error || 'Error loading results!');
+      }
+    }
+
+    loadResults();
+  </script>
+</body>
+</html>

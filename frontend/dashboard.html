@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hunarify Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="relative flex flex-col items-center justify-center min-h-screen p-5 font-sans">
+
+<!-- Background Image and Overlay -->
+<div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1629721671030-a83edbb11211?w=500&auto=format&fit=crop&q=60')] bg-cover bg-center"></div>
+
+<!-- Profile Button -->
+<button id="profileBtn" class="absolute top-5 right-5 bg-pink-400 text-white rounded-full p-3 hover:bg-green-200 transition z-20 shadow-lg">
+  👤
+</button>
+
+<!-- Profile Sidebar -->
+<div id="profileSidebar" class="fixed top-0 right-0 h-screen w-72 bg-white rounded-l-2xl shadow-2xl p-6 text-gray-800 backdrop-blur-lg bg-opacity-95 space-y-3 z-30 transform translate-x-full transition-transform duration-300">
+  <div class="flex flex-col items-center mt-4">
+    <div class="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden">
+      <img id="userPhoto" src="https://via.placeholder.com/100" alt="Profile Photo" class="w-full h-full object-cover rounded-full" />
+    </div>
+    <div id="profileInfo" class="text-sm space-y-1 mt-3 text-left w-full"></div>
+  </div>
+  <div class="flex flex-col space-y-3 mt-3">
+    <a href="./edit-profile.html" class="bg-blue-600 text-white text-center rounded-lg p-2 font-semibold hover:bg-blue-700 transition">Edit Profile</a>
+    <button id="closeProfileBtn" class="bg-gray-300 text-gray-800 rounded-lg p-2 font-bold hover:bg-gray-400 transition">Close</button>
+  </div>
+</div>
+
+<!-- Main Dashboard Card -->
+<div class="bg-white rounded-3xl shadow-2xl p-8 w-96 text-center relative z-10 backdrop-blur-sm bg-opacity-95 space-y-5">
+  <h1 class="text-3xl font-bold text-gray-800">Hunarify Dashboard</h1>
+  <p id="welcomeMsg" class="text-gray-600"></p>
+
+  <!-- Main Domain Selection -->
+  <div class="mt-4">
+    <label class="font-semibold text-gray-700">Select Your Main Domain:</label>
+    <select id="mainDomain" class="mt-2 p-3 rounded-lg border border-gray-300 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <option value="">-- Choose a Domain --</option>
+      <option value="art">🎨 Art & Culture</option>
+      <option value="tech">💻 Tech</option>
+      <option value="gaming">🎮 Gaming</option>
+    </select>
+  </div>
+
+  <!-- Sub Field Selection -->
+  <div class="mt-4 hidden" id="subFieldContainer">
+    <label class="font-semibold text-gray-700">Select a Sub Field:</label>
+    <select id="subField" class="mt-2 p-3 rounded-lg border border-gray-300 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="mt-5 space-y-3">
+    <button id="startTestBtn" class="w-full p-3 rounded-lg bg-green-600 text-white font-bold hover:bg-green-700 transition transform hover:scale-[1.01]">Start Test</button>
+    <button id="logoutBtn" class="w-full p-3 rounded-lg bg-red-600 text-white font-bold hover:bg-red-700 transition transform hover:scale-[1.01]">Logout</button>
+    <a href="./tips.html" class="mt-3 inline-block w-full text-center p-3 rounded-lg bg-pink-500 text-white font-bold hover:bg-pink-700 transition">
+      Resume your track
+    </a>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script>
+const token = localStorage.getItem('token');
+if (!token) {
+  alert('Please login first!');
+  window.location.href = './auth.html';
+}
+
+// Load Dashboard and Profile Info
+async function loadDashboard() {
+  // Get Dashboard Welcome Message
+  const response = await fetch("/dashboard", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const result = await response.json();
+  if (response.ok) {
+    document.getElementById('welcomeMsg').textContent = result.message;
+
+    // Get Profile Info
+    const profileResponse = await fetch("/profile", {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    const user = await profileResponse.json();
+    if (profileResponse.ok) {
+      document.getElementById('profileInfo').innerHTML = `
+        <p><b>Name:</b> ${user.name}</p>
+        <p><b>Email:</b> ${user.email}</p>
+        <p><b>Category:</b> ${user.selectedCategory || 'N/A'}</p>
+        <p><b>Sub Field:</b> ${user.selectedSubField || 'N/A'}</p>
+        <p><b>Last Score:</b> ${user.testResult || 'N/A'}/10</p>
+      `;
+    }
+  } else {
+    alert(result.error);
+    window.location.href = './auth.html';
+  }
+}
+loadDashboard();
+
+// Main Domain -> Sub Field Logic
+const mainDomain = document.getElementById('mainDomain');
+const subFieldContainer = document.getElementById('subFieldContainer');
+const subField = document.getElementById('subField');
+
+const options = {
+  art: ["Painting", "Sculpture", "Photography", "Digital Art"],
+  tech: ["Web Development", "Data Science", "Cybersecurity", "AI/ML"],
+  gaming: ["Game Development", "Game Testing", "Esports", "Character Design"]
+};
+
+mainDomain.addEventListener('change', (e) => {
+  const selected = e.target.value;
+
+  if (!selected) {
+    subFieldContainer.classList.add('hidden');
+    localStorage.removeItem('selectedCategory');
+    localStorage.removeItem('selectedSubField');
+    return;
+  }
+
+  const fields = options[selected];
+  subField.innerHTML = fields.map(f => `<option value="${f}">${f}</option>`).join('');
+  subFieldContainer.classList.remove('hidden');
+  localStorage.setItem('selectedCategory', selected);
+});
+
+subField.addEventListener('change', (e) => {
+  localStorage.setItem('selectedSubField', e.target.value);
+});
+
+// Buttons
+document.getElementById('startTestBtn').addEventListener('click', () => {
+  if (!localStorage.getItem('selectedCategory')) {
+    alert('Please select a category first!');
+    return;
+  }
+  window.location.href = './test.html';
+});
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('selectedCategory');
+  localStorage.removeItem('selectedSubField');
+  window.location.href = './auth.html';
+});
+
+// Profile Sidebar Logic
+const profileBtn = document.getElementById('profileBtn');
+const profileSidebar = document.getElementById('profileSidebar');
+const closeProfileBtn = document.getElementById('closeProfileBtn');
+
+profileBtn.addEventListener('click', () => {
+  profileSidebar.classList.remove('translate-x-full');
+});
+closeProfileBtn.addEventListener('click', () => {
+  profileSidebar.classList.add('translate-x-full');
+});
+</script>
+</body>
+</html>

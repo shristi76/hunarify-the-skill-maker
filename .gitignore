@@ -1,0 +1,21 @@
+.env
+
+#  This will install:
+
+# express — backend framework
+
+# mongoose — MongoDB ORM
+
+# dotenv — environment variable loader
+
+# cors — cross-origin request support
+
+# bcryptjs — password hashing
+
+# jsonwebtoken — JWT generation & verification
+
+# path — built-in in Node.js (no installation required)
+
+
+# mongo db url ,secret key koi bhi ,gemini api
+# how to run->node backend/server.js

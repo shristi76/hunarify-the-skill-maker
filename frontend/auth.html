@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hunarify - Login/Register</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="relative flex items-center justify-center min-h-screen overflow-hidden">
+  <!-- Background Image -->
+  <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1536104968055-4d61aa56f46a?fit=crop&w=1920&q=80')] bg-cover bg-center"></div>
+  <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+
+  <!-- Main Auth Box -->
+  <div class="bg-white bg-opacity-20 backdrop-blur-md rounded-2xl shadow-2xl p-8 w-96 relative z-10 transform transition-all duration-500 hover:scale-105">
+    <h1 class="text-3xl font-bold text-white text-center">Hunarify</h1>
+    <p class="text-gray-300 text-center mt-2">Login or Register</p>
+
+    <div class="mt-6">
+      <!-- Login Form -->
+      <div id="login-form" class="transition-opacity duration-500">
+        <input id="email" type="email" placeholder="Email" class="w-full mt-4 p-3 rounded-lg border border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 bg-white bg-opacity-80" />
+        <input id="password" type="password" placeholder="Password" class="w-full mt-4 p-3 rounded-lg border border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 bg-white bg-opacity-80" />
+        <button id="loginBtn" class="w-full mt-4 p-3 rounded-lg bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition">Login</button>
+      </div>
+
+      <!-- Register Form -->
+      <div id="register-form" class="hidden transition-opacity duration-500">
+        <input id="name" type="text" placeholder="Full Name" class="w-full mt-4 p-3 rounded-lg border border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 bg-white bg-opacity-80" />
+        <input id="register-email" type="email" placeholder="Email" class="w-full mt-4 p-3 rounded-lg border border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 bg-white bg-opacity-80" />
+        <input id="register-password" type="password" placeholder="Password" class="w-full mt-4 p-3 rounded-lg border border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 bg-white bg-opacity-80" />
+        <button id="registerBtn" class="w-full mt-4 p-3 rounded-lg bg-green-600 text-white font-bold hover:bg-green-700 transition">Register</button>
+      </div>
+    </div>
+
+    <div class="mt-4 text-center">
+      <span id="toggle" class="text-gray-200 cursor-pointer hover:underline">Don't have an account? Register</span>
+    </div>
+  </div>
+
+  <script>
+    // Toggle Between Login and Register
+    const toggle = document.getElementById('toggle');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+
+    toggle.addEventListener('click', () => {
+      loginForm.classList.toggle('hidden');
+      registerForm.classList.toggle('hidden');
+      toggle.textContent = loginForm.classList.contains('hidden')
+        ? "Already have an account? Login"
+        : "Don't have an account? Register";
+    });
+  </script>
+
+  <script>
+    const loginBtn = document.getElementById("loginBtn");
+    const registerBtn = document.getElementById("registerBtn");
+
+    // REGISTER
+    registerBtn?.addEventListener("click", async () => {
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("register-email").value.trim();
+      const password = document.getElementById("register-password").value.trim();
+
+      if (!name || !email || !password) {
+        alert("All fields are required!");
+        return;
+      }
+
+      const response = await fetch("/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+      const result = await response.json();
+
+      if (response.ok) {
+        alert(result.message);
+        registerForm.classList.add("hidden");
+        loginForm.classList.remove("hidden");
+        toggle.textContent = "Don't have an account? Register";
+      } else {
+        alert(result.error);
+      }
+    });
+
+    // LOGIN
+    loginBtn?.addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (!email || !password) {
+        alert("Please fill in both fields.");
+        return;
+      }
+
+      const response = await fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const result = await response.json();
+
+      if (response.ok) {
+        alert(result.message);
+        localStorage.setItem("token", result.token);
+        window.location.href = "./dashboard.html";
+      } else {
+        alert(result.error);
+      }
+    });
+  </script>
+</body>
+</html>
