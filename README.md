@@ -1,6 +1,6 @@
-# Hunarify 🌟
+# kaushal setu 🌟
 
-Hunarify is a personalized web platform that empowers individuals to **monetize their skills** by guiding them through **skill discovery**, **self-assessment**, and **freelancing opportunities**. Built with a user-first design and AI integration, Hunarify helps users unlock their hidden talents and enter the digital creator or freelance economy confidently.
+Hunarify is a personalized web platform that empowers individuals to **monetize their skills** by guiding them through **skill discovery**, **self-assessment**, and **freelancing opportunities**. Built with a user-first design and AI integration, kaushal setu helps users unlock their hidden talents and enter the digital creator or freelance economy confidently.
 
 ---
 
