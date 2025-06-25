@@ -41,16 +41,6 @@ it is a personalized web platform that empowers individuals to **monetize their 
 | File Uploads         | Multer                         |
 | AI Content Generator | Google Gemini API (gemini-pro) |
 
----
-
-
-
-
-
-## 📁 Folder Structure
-
-```
-
 
 
 ---
